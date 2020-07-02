@@ -1,0 +1,8 @@
+open
+save
+pen
+color
+rotate
+crop
+text
+invert
