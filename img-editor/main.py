@@ -21,7 +21,7 @@ pygame.init()
 Tk().withdraw()
 
 filepath = None
-image = None # image in pillow
+image = Image.new("RGB", (win_width, win_height), white) # image in pillow
 image_display = None # image in pygame, class: pygame.Surface
 
 # button icons
@@ -34,6 +34,7 @@ img_color.fill(black)
 img_c_rotate = pygame.image.load("images\\img_c_rotate.png")
 img_a_rotate = pygame.image.load("images\\img_a_rotate.png")
 img_crop = pygame.image.load("images\\img_crop.png")
+img_crop_c = pygame.image.load("images\\img_crop_c.png")
 
 # initialize the window
 window = pygame.display.set_mode((win_width, win_height), pygame.RESIZABLE)
@@ -51,15 +52,14 @@ def cmd_open():
         print("Succeed")
         filepath = filename
 
+# TODO: directly save the image to the file it opened from
 def cmd_save():
-    if filepath:
-        pass
-    else:
-        cmd_save_as()
+    cmd_save_as()
 
 def cmd_save_as():
     filename = asksaveasfilename()
-    pass
+    if filename:
+        image.save(filename)
 
 def cmd_pen():
     tools.using = tools.pen
@@ -80,15 +80,20 @@ def cmd_c_rotate():
     print("clockwise rotation")
     global image
     if image:
-        image = image.rotate(-90)
+        image = image.rotate(-90, expand = True)
 
 def cmd_a_rotate():
     global image
     if image:
-        image = image.rotate(90)
+        image = image.rotate(90, expand = True)
 
 def cmd_crop():
-    pass
+    if tools.using == tools.crop:
+        if tools.crop.selected:
+            global image
+            if image:
+                image = tools.crop.crop(image)
+    tools.using = tools.crop
 
 # rearrange the widgets when window resize
 def wid_adjust():
@@ -99,10 +104,22 @@ def wid_adjust():
             x = pad_x + i*68
             wid.config(x, y)
 
+# get two lines together
 def wid_get():
     return widgets[0] + widgets[1]
 
+# special button for crop
+class Crop_Button(Button):
+    def draw(self, surface, alt):
+        # if the crop area is selected, change the button to remind the user they can commit the change
+        if tools.using == tools.crop and tools.crop.selected:
+            self.img = img_crop_c
+        else:
+            self.img = img_crop
+        super().draw(surface, alt)
+
 # I call the list widgets but it seems that there are only buttons
+crop_button = Crop_Button(img_crop, cmd_crop, pygame.K_c)
 widgets = [[
         Button(img_open, cmd_open, pygame.K_a),
         Button(img_save, cmd_save, pygame.K_s, cmd_save_as),
@@ -110,7 +127,7 @@ widgets = [[
         Button(img_color, cmd_color, pygame.K_f)], [
         Button(img_c_rotate, cmd_c_rotate, pygame.K_z),
         Button(img_a_rotate, cmd_a_rotate, pygame.K_x),
-        Button(img_crop, cmd_crop, pygame.K_c)
+        crop_button
     ]
 ]
 
@@ -184,6 +201,7 @@ while running:
         window.blit(image_display, (0,0))
     for wid in wid_get():
         wid.draw(window, alt)
+    tools.draw(window)
 
     pygame.display.update()
 

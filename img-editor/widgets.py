@@ -45,13 +45,3 @@ class Button:
 
     def config(self, x, y):
         self.x, self.y = x, y
-
-'''
-class Rot_Button(Button):
-    @property
-    def pressed(self):
-        return self._pressed
-    @pressed.setter
-    def press(self, value):
-
-'''
