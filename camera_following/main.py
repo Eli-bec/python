@@ -35,8 +35,6 @@ SPEED = 500
 WIN_WIDTH, WIN_HEIGHT = 800, 800
 window = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 
-# I don't have the old image, so it is replaced by a random image
-# the image is to 4 times its original size to cover the whole window
 bg_image = pygame.image.load("background.jpg")
 # create a game object to represent the image
 bg_width, bg_height = bg_image.get_width(), bg_image.get_height()
