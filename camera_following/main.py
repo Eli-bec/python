@@ -1,18 +1,16 @@
 import pygame
 
 class GameObject:
+    """ object that contains a position """
     def __init__(self, x, y):
         self.x, self.y = x, y
 
 class Camera(GameObject):
+    """ object to save the offset of the objects' position when rendering """
     def render(self, surface, gameObjects):
+        # print(gameObjects[1].x - self.x)
         for gm in gameObjects:
             gm.render(surface, gm.x - self.x, gm.y - self.y)
-        # MODIFIED
-        pygame.draw.rect(window, "red", (min_x, min_y, bg_width, bg_height), 1)
-        print(self.x, self.y)
-        pygame.draw.circle(window, "blue", (self.x, self.y), 2)
-        # END MODIFIED
         pygame.display.update()
 
 class ColoredRect(GameObject):
@@ -31,47 +29,52 @@ class Sprite(GameObject):
         pos = (x or self.x,  y or self.y)
         surface.blit(self.image, pos)
 
-
+# pygame setup
 pygame.init()
 SPEED = 500
 WIN_WIDTH, WIN_HEIGHT = 800, 800
 window = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 
-# MODIFIED
-# the image is not sent to me, so it is replaced by a random image
-# scaled the image to 4 times its original size to cover the whole window
-# bg_image = pygame.image.load("background.jpg")
-bg_image = pygame.transform.scale_by(pygame.image.load("background.jpg"), 4)
-# END MODIFIED
+# I don't have the old image, so it is replaced by a random image
+# the image is to 4 times its original size to cover the whole window
+bg_image = pygame.image.load("background.jpg")
+# create a game object to represent the image
 bg_width, bg_height = bg_image.get_width(), bg_image.get_height()
 bg1 = Sprite(0, 0, bg_image)
-# MODIFIED
-# bg2 = Sprite(bg_width, 0, bg_image)
-# bg3 = Sprite(0, bg_height, bg_image)
-# bg4 = Sprite(bg_width, bg_height, bg_image)
-# BOUND_RIGHT, BOUND_BOTTOM = bg_width*2, bg_height*2
-# END MODIFIED
-BOUND_RIGHT, BOUND_BOTTOM = bg_width, bg_height
 
+# set the bounds where the player can move
+# the bounds are also used to define the bounds of the camera
+# * The bounds can be arbitrary values,
+#   but I chose to use the size of the background image.
+# * The bounds should be set bigger or equal to the window size
+BOUND_RIGHT, BOUND_BOTTOM = max(bg_width, WIN_WIDTH), max(bg_height, WIN_HEIGHT)
+
+# create a game object to represent the player
 player = ColoredRect(0, 0, 40, 40, "red")
 player_max_x, player_max_y = BOUND_RIGHT - player.w, BOUND_BOTTOM - player.h
 
+# create a game object for testing
+coloredRect = ColoredRect(100, 100, 40, 40, "blue")
+
 cam = Camera(-100, -100)
+# set the bounds for the camera
 cam_max_x, cam_max_y = BOUND_RIGHT - WIN_WIDTH, BOUND_BOTTOM - WIN_WIDTH
 
-# MODIFIED
-# gameObjects = [bg1, bg2, bg3, bg4, player] # game objects
-gameObjects = [bg1, player] # game objects
-# END MODIFIED
+# register the game objects for later reference when rendering
+gameObjects = [bg1, coloredRect, player] # game objects
 
+# main loop setup
 running = True
 time_last = pygame.time.get_ticks()
 
+# mainloop
 while running:
+    # delta time (time passed)
     time = pygame.time.get_ticks()
     dt = (time_last - time) / 1000 # in seconds
     time_last = time
 
+    # handle 'X' button
     for event in pygame.event.get():
         if event.type == pygame.QUIT: running = False
     
